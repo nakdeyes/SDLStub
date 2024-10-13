@@ -20,7 +20,7 @@ SDL_AppResult SDL_AppInit(void** appstate, int argc, char* argv[]) {
     }
     
     // create a window
-    SDL_Window* window = SDL_CreateWindow("Window", 352, 430, SDL_WINDOW_RESIZABLE);
+    SDL_Window* window = SDL_CreateWindow("SDLStub", 352, 430, SDL_WINDOW_RESIZABLE);
     if (not window){
         return SDL_Fail();
     }
