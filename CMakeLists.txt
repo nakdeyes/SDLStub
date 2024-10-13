@@ -58,6 +58,12 @@ add_subdirectory(source/3rdParty/SDL EXCLUDE_FROM_ALL)
 target_link_libraries(${EXECUTABLE_NAME} PUBLIC SDL3::SDL3)
 target_compile_definitions(${EXECUTABLE_NAME} PUBLIC SDL_MAIN_USE_CALLBACKS)
 
+# configure ImGui
+add_subdirectory(source/3rdParty/ImGui EXCLUDE_FROM_ALL)
+
+# link ImGui 
+target_link_libraries(${EXECUTABLE_NAME} PUBLIC imgui)
+
 # set some extra configs for each platform
 set_target_properties(${EXECUTABLE_NAME} PROPERTIES 
     # On macOS, make a proper .app bundle instead of a bare executable
