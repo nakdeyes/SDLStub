@@ -6,5 +6,5 @@ int main(int, char**)
 {
     SDLApp::Init("SDLStub");
     
-    return 0;
+    return SDLApp::ExecuteApp();
 }

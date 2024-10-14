@@ -65,6 +65,10 @@ target_link_libraries(${EXECUTABLE_NAME} PUBLIC SDL3::SDL3)
 target_include_directories(${EXECUTABLE_NAME} PUBLIC source/3rdParty/SDL)
 target_compile_definitions(${EXECUTABLE_NAME} PUBLIC SDL_MAIN_USE_CALLBACKS)
 
+# Link OpenGL
+find_package(OpenGL REQUIRED)
+target_link_libraries(${EXECUTABLE_NAME} PUBLIC OpenGL::GL)
+
 # configure ImGui
 add_subdirectory(source/3rdParty/ImGui EXCLUDE_FROM_ALL)
 
