@@ -200,7 +200,7 @@ int SDLApp::ExecuteApp()
         // Rendering
         ImGui::Render();
         
-          (0, 0, (int)io.DisplaySize.x, (int)io.DisplaySize.y);
+        //glViewport(0, 0, (int)io.DisplaySize.x, (int)io.DisplaySize.y);
 //        glClearColor(clear_color.x * clear_color.w, clear_color.y * clear_color.w, clear_color.z * clear_color.w, clear_color.w);
 //        glClear(GL_COLOR_BUFFER_BIT);
         ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
