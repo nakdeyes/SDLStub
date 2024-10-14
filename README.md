@@ -1,23 +1,13 @@
-## SDL3 App From Source Minimal Example
-This is a minimal example for building and using SDL3 from source 
-using C++ and CMake. It also demonstrates setting up things like macOS/iOS
-bundles.
-See [src/main.cpp](src/main.cpp) for the code. 
+## SDL3 Sample app w/ ImGui implemented for quick SDL / ImGui app creation
+Started with the official SDL3 Sample, then stripped it down a bit and implemented ImGui on top for easy UI creation. CMake is a requirement as we use CMake FetchContent to pull down SDL3 and Imgui libraries down at build time. ImGui implmentation is using the Docking branch. ImPlot will likely come in soon as well. 
 
 ### Building And Running
-Are you a complete beginner? If so, read [this](https://github.com/Ravbug/sdl3-sample/wiki/Setting-up-your-computer)!
-Otherwise, install CMake and your favorite compiler, and follow the commands below:
-```sh
-# You need to clone with submodules, otherwise SDL will not download.
-git clone https://github.com/Ravbug/sdl3-sample --depth=1 --recurse-submodules
-cd sdl3-sample
-cmake -S . -B build
-```
-You can also use an init script inside [`config/`](config/). Then open the IDE project inside `build/` 
-(If you had CMake generate one) and run!
+Clone the depot, ensure CMake is installed, and then run one of the platform specific setup scripts in the config directory depending on your preferred development platform.
+
+Open the generated solution files in your IDE, compile, and enjoy!
 
 ## Supported Platforms
-I have tested the following:
+The underlying SDL Sample should support the following platforms, however the Emscripten platforms have not been directly tested on this project.
 - macOS
 - iOS
 - tvOS
@@ -31,16 +21,5 @@ I have tested the following:
 
 Note: UWP support was [removed from SDL3](https://github.com/libsdl-org/SDL/pull/10731) during its development. For historical reasons, you can a working UWP sample via this commit: [df270da](https://github.com/Ravbug/sdl3-sample/tree/df270daa8d6d48426e128e50c73357dfdf89afbf)
 
-## Updating SDL
-Just update the submodule:
-```sh
-cd SDL
-git pull
-```
-You don't need to use a submodule, you can also copy the source in directly. This
-repository uses a submodule to keep its size to a minimum. Note that as of writing, SDL3 is
-in development, so expect APIs to change. 
-
-
-## Reporting issues
-Is something not working? Create an Issue or send a Pull Request on this repository!
+## Updating SDL / ImGui / 3rdParties
+Currently, the commits at which to sync these dependencies are in the root CMakeLists.txt. You can also likely do a 'git pull' in their 3rdParties directories after initial project generation.
