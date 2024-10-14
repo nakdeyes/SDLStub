@@ -1,6 +1,7 @@
 ###############################################################################
 ####  CMAKE SETUP
 cmake_minimum_required(VERSION 3.16)
+project(SDLStub)
 
 # set the output directory for built objects.
 # This makes sure that the dynamic library goes into the build directory automatically.
@@ -14,12 +15,18 @@ set(CMAKE_INSTALL_PREFIX "${CMAKE_BINARY_DIR}" CACHE INTERNAL "")
 # set(CMAKE_C_COMPILER_FORCED TRUE)
 # set(CMAKE_CXX_COMPILER_FORCED TRUE)
 
-set(CMAKE_C_COMPILER_WORKS TRUE)
-set(CMAKE_CXX_COMPILER_WORKS TRUE)
+set(CMAKE_SHARED_LIBRARY_LINK_C_FLAGS "")
+set(CMAKE_SHARED_LIBRARY_LINK_CXX_FLAGS "")
 
-###############################################################################
-####  PROJECT SETUP
-project(SDLStub)
+set(CMAKE_SKIP_COMPATIBILITY_TESTS TRUE)
+set(CMAKE_CXX_STANDARD_REQUIRED TRUE)
+set(CMAKE_CXX_EXTENSIONS OFF)
+
+set(CMAKE_CXX_COMPILER_WORKS TRUE CACHE BOOL "" FORCE)
+set(CMAKE_C_COMPILER_WORKS TRUE CACHE BOOL "" FORCE)
+
+# set(CMAKE_C_COMPILER_WORKS TRUE)
+# set(CMAKE_CXX_COMPILER_WORKS TRUE)
 
 # Set the name of the executable
 set(EXECUTABLE_NAME ${PROJECT_NAME})
@@ -54,8 +61,8 @@ if(APPLE)
 endif()
 
 # Set C++ version
-set (CMAKE_CXX_STANDARD 20)
-target_compile_features(${EXECUTABLE_NAME} PUBLIC cxx_std_20)
+set (CMAKE_CXX_STANDARD 17)
+target_compile_features(${EXECUTABLE_NAME} PUBLIC cxx_std_17)
 
 # on Web targets, we need CMake to generate a HTML webpage. 
 if(CMAKE_SYSTEM_NAME MATCHES Emscripten)
@@ -73,8 +80,11 @@ set(BUILD_SHARED_LIBS OFF)
 set(SDL_SHARED OFF)
 set(SDL_STATIC ON)
 
-set(IMGUI_PATH ${CMAKE_CURRENT_SOURCE_DIR}/source/3rdParty/ImGui)
-set(SDL_PATH ${CMAKE_CURRENT_SOURCE_DIR}/source/3rdParty/SDL3)
+set(IMGUI_PATH  ${CMAKE_CURRENT_SOURCE_DIR}/source/3rdParty/ImGui)
+set(IMPLOT_PATH ${CMAKE_CURRENT_SOURCE_DIR}/source/3rdParty/ImPlot)
+set(SDL_PATH    ${CMAKE_CURRENT_SOURCE_DIR}/source/3rdParty/SDL3)
+
+Set(FETCHCONTENT_QUIET FALSE)
 
 FetchContent_Declare(
   imgui
@@ -82,29 +92,40 @@ FetchContent_Declare(
   GIT_TAG        "origin/docking"
   SOURCE_DIR     ${IMGUI_PATH}
   GIT_SHALLOW    TRUE
-  GIT_PROGRESS   ON
+  GIT_PROGRESS   TRUE
+  SYSTEM
+)
+
+FetchContent_Declare(
+  implot
+  GIT_REPOSITORY https://github.com/epezent/implot.git
+  GIT_TAG        "origin/master"
+  SOURCE_DIR     ${IMPLOT_PATH}
+  GIT_SHALLOW    TRUE
+  GIT_PROGRESS   TRUE
   SYSTEM
 )
 
 FetchContent_Declare(
   SDL3
   GIT_REPOSITORY https://github.com/libsdl-org/SDL.git
-  GIT_TAG        e292d1f5ace469f718d7b6b4dec8c28e37dcaa0e # preview-3.1.3
+  GIT_TAG        "origin/main" # yolo
   SOURCE_DIR     ${SDL_PATH}
   GIT_SHALLOW    TRUE
-  GIT_PROGRESS   ON
+  GIT_PROGRESS   TRUE
   SYSTEM
 )
 
-FetchContent_MakeAvailable(imgui SDL3)
+FetchContent_MakeAvailable(imgui implot SDL3)
 
-#message(SDL3_SOURCE_DIR="${SDL3_SOURCE_DIR}")
 #message(imgui_SOURCE_DIR="${imgui_SOURCE_DIR}")
+#message(implot_SOURCE_DIR="${implot_SOURCE_DIR}")
+#message(SDL3_SOURCE_DIR="${SDL3_SOURCE_DIR}")
 
 ###############################################################################
-####  ImGui
+####  ImGui / ImPlot
 
-# Imgui doesn't come with a CMakeLists so easiest is to just create a lib here.
+# Imgui/ImPlot doesn't come with a CMakeLists so easiest is to just create a lib here.
 add_library(imgui STATIC
     ${IMGUI_PATH}/imconfig.h
     ${IMGUI_PATH}/imgui_demo.cpp
@@ -118,10 +139,17 @@ add_library(imgui STATIC
     ${IMGUI_PATH}/backends/imgui_impl_opengl3.h
     ${IMGUI_PATH}/backends/imgui_impl_sdl3.cpp
     ${IMGUI_PATH}/backends/imgui_impl_sdl3.h
+
+    ${IMPLOT_PATH}/implot_demo.cpp
+    ${IMPLOT_PATH}/implot_internal.h
+    ${IMPLOT_PATH}/implot_items.cpp
+    ${IMPLOT_PATH}/implot.cpp
+    ${IMPLOT_PATH}/implot.h
 )
 
 # configure ImGui
 include_directories(${IMGUI_PATH})
+include_directories(${IMPLOT_PATH})
 target_link_libraries(${EXECUTABLE_NAME} PUBLIC imgui)
 
 ###############################################################################

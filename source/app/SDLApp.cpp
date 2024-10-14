@@ -12,6 +12,7 @@
 
 // ImGui
 #include "imgui.h"
+#include "implot.h"
 #include "backends/imgui_impl_opengl3.h"
 #include "backends/imgui_impl_sdl3.h"
 
@@ -84,6 +85,7 @@
     // Setup Dear ImGui context
     IMGUI_CHECKVERSION();
     ImGui::CreateContext();
+    ImPlot::CreateContext();
     ImGuiIO& io = ImGui::GetIO(); (void)io;
     io.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard;     // Enable Keyboard Controls
     io.ConfigFlags |= ImGuiConfigFlags_NavEnableGamepad;      // Enable Gamepad Controls
@@ -128,6 +130,7 @@ int SDLApp::ExecuteApp()
     
     // Our state
     bool show_demo_window = true;
+    bool show_plot_demo_window = true;
     bool show_another_window = false;
     ImVec4 clear_color = ImVec4(0.45f, 0.55f, 0.60f, 1.00f);
     ImGuiIO& io = ImGui::GetIO(); (void)io;
@@ -163,7 +166,14 @@ int SDLApp::ExecuteApp()
         
         // 1. Show the big demo window (Most of the sample code is in ImGui::ShowDemoWindow()! You can browse its code to learn more about Dear ImGui!).
         if (show_demo_window)
+        {
             ImGui::ShowDemoWindow(&show_demo_window);
+        }
+
+        if (show_plot_demo_window)
+        {
+            ImPlot::ShowDemoWindow(&show_plot_demo_window);
+        }
         
         // 2. Show a simple window that we create ourselves. We use a Begin/End pair to create a named window.
         {
@@ -174,6 +184,7 @@ int SDLApp::ExecuteApp()
             
             ImGui::Text("This is some useful text.");               // Display some text (you can use a format strings too)
             ImGui::Checkbox("Demo Window", &show_demo_window);      // Edit bools storing our window open/close state
+            ImGui::Checkbox("Plot Demo Window", &show_plot_demo_window);      // Edit bools storing our window open/close state
             ImGui::Checkbox("Another Window", &show_another_window);
             
             ImGui::SliderFloat("float", &f, 0.0f, 1.0f);            // Edit 1 float using a slider from 0.0f to 1.0f
@@ -210,6 +221,7 @@ int SDLApp::ExecuteApp()
     // Cleanup
     ImGui_ImplOpenGL3_Shutdown();
     ImGui_ImplSDL3_Shutdown();
+    ImPlot::DestroyContext();
     ImGui::DestroyContext();
     
     SDL_GL_DestroyContext(SDLApp::GLContext);
