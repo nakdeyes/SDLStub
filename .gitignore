@@ -26,6 +26,10 @@
 *.a
 *.lib
 
+# CMake build dir
+build/*
+
+# Mac OS Garbo
 .DS_Store
 *.DS_Store
 
