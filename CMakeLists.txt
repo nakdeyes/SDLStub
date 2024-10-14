@@ -1,3 +1,5 @@
+###############################################################################
+####  CMAKE SETUP
 cmake_minimum_required(VERSION 3.16)
 
 # set the output directory for built objects.
@@ -8,7 +10,15 @@ set(CMAKE_LIBRARY_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/$<CONFIGURATION>")
 # prevent installing to system directories. 
 set(CMAKE_INSTALL_PREFIX "${CMAKE_BINARY_DIR}" CACHE INTERNAL "")
 
-# Declare the project
+# set(CMAKE_TRY_COMPILE_TARGET_TYPE "STATIC_LIBRARY")
+# set(CMAKE_C_COMPILER_FORCED TRUE)
+# set(CMAKE_CXX_COMPILER_FORCED TRUE)
+
+set(CMAKE_C_COMPILER_WORKS TRUE)
+set(CMAKE_CXX_COMPILER_WORKS TRUE)
+
+###############################################################################
+####  PROJECT SETUP
 project(SDLStub)
 
 # Set the name of the executable
@@ -52,29 +62,87 @@ if(CMAKE_SYSTEM_NAME MATCHES Emscripten)
 	set(CMAKE_EXECUTABLE_SUFFIX ".html" CACHE INTERNAL "")
 endif()
 
+###############################################################################
+####  Fetch 3rdParties
+
+include(FetchContent)
+
 set(SDL_OPENGL ON)
 set(SDL_VIDEO ON)
+set(BUILD_SHARED_LIBS OFF)
+set(SDL_SHARED OFF)
+set(SDL_STATIC ON)
 
-# Configure SDL by calling its CMake file.
+set(IMGUI_PATH ${CMAKE_CURRENT_SOURCE_DIR}/source/3rdParty/ImGui)
+set(SDL_PATH ${CMAKE_CURRENT_SOURCE_DIR}/source/3rdParty/SDL3)
+
+FetchContent_Declare(
+  imgui
+  GIT_REPOSITORY https://github.com/ocornut/imgui.git
+  GIT_TAG        22503bfe75359d5d7c24e03e9fe03ffca70585cf # docking branch latest 10/10/24
+  SOURCE_DIR     ${IMGUI_PATH}
+  GIT_SHALLOW    TRUE
+  GIT_PROGRESS   ON
+  SYSTEM
+)
+
+FetchContent_Declare(
+  SDL3
+  GIT_REPOSITORY https://github.com/libsdl-org/SDL.git
+  GIT_TAG        e292d1f5ace469f718d7b6b4dec8c28e37dcaa0e # preview-3.1.3
+  SOURCE_DIR     ${SDL_PATH}
+  GIT_SHALLOW    TRUE
+  GIT_PROGRESS   ON
+  SYSTEM
+)
+
+FetchContent_MakeAvailable(imgui SDL3)
+
+#message(SDL3_SOURCE_DIR="${SDL3_SOURCE_DIR}")
+#message(imgui_SOURCE_DIR="${imgui_SOURCE_DIR}")
+
+###############################################################################
+####  ImGui
+
+# Imgui doesn't come with a CMakeLists so easiest is to just create a lib here.
+add_library(imgui STATIC
+    ${IMGUI_PATH}/imconfig.h
+    ${IMGUI_PATH}/imgui_demo.cpp
+    ${IMGUI_PATH}/imgui_draw.cpp
+    ${IMGUI_PATH}/imgui_internal.h
+    ${IMGUI_PATH}/imgui_tables.cpp
+    ${IMGUI_PATH}/imgui_widgets.cpp
+    ${IMGUI_PATH}/imgui.cpp
+    ${IMGUI_PATH}/imgui.h
+    ${IMGUI_PATH}/backends/imgui_impl_opengl3.cpp
+    ${IMGUI_PATH}/backends/imgui_impl_opengl3.h
+    ${IMGUI_PATH}/backends/imgui_impl_sdl3.cpp
+    ${IMGUI_PATH}/backends/imgui_impl_sdl3.h
+)
+
+# configure ImGui
+include_directories(${IMGUI_PATH})
+target_link_libraries(${EXECUTABLE_NAME} PUBLIC imgui)
+
+###############################################################################
+####  SDL
+
 # we use EXCLUDE_FROM_ALL so that its install targets and configs don't
 # pollute upwards into our configuration.
-add_subdirectory(source/3rdParty/SDL EXCLUDE_FROM_ALL)
+#add_subdirectory(${SDL_SOURCE_DIR} EXCLUDE_FROM_ALL)
 
-# Link SDL to our executable. This also makes its include directory available to us. 
+include_directories(${SDL_PATH}/include)
 target_link_libraries(${EXECUTABLE_NAME} PUBLIC SDL3::SDL3)
-target_include_directories(${EXECUTABLE_NAME} PUBLIC source/3rdParty/SDL)
-target_compile_definitions(${EXECUTABLE_NAME} PUBLIC SDL_MAIN_USE_CALLBACKS)
+#target_compile_definitions(${EXECUTABLE_NAME} INTERFACE SDL_MAIN_USE_CALLBACKS)
 
-# Link OpenGL
+###############################################################################
+####  OpenGL
+
 find_package(OpenGL REQUIRED)
 target_link_libraries(${EXECUTABLE_NAME} PUBLIC OpenGL::GL)
 
-# configure ImGui
-add_subdirectory(source/3rdParty/ImGui EXCLUDE_FROM_ALL)
-
-# link ImGui 
-target_link_libraries(${EXECUTABLE_NAME} PUBLIC imgui)
-target_include_directories(${EXECUTABLE_NAME} PUBLIC source/3rdParty/ImGui)
+###############################################################################
+####  Final CMAKE packaging and executable stuff
 
 # set some extra configs for each platform
 set_target_properties(${EXECUTABLE_NAME} PROPERTIES 

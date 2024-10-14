@@ -29,6 +29,10 @@
 # CMake build dir
 build/*
 
+# 3rd Parties sync'ed via make
+source/3rdParty/ImGui/*
+Source/3rdParty/SDL3/*
+
 # Mac OS Garbo
 .DS_Store
 *.DS_Store
