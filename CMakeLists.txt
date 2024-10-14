@@ -79,7 +79,7 @@ set(SDL_PATH ${CMAKE_CURRENT_SOURCE_DIR}/source/3rdParty/SDL3)
 FetchContent_Declare(
   imgui
   GIT_REPOSITORY https://github.com/ocornut/imgui.git
-  GIT_TAG        514a97a9b765ff04e5157adb9ff84b8a67a30158 # docking branch latest 10/14/24
+  GIT_TAG        "origin/docking"
   SOURCE_DIR     ${IMGUI_PATH}
   GIT_SHALLOW    TRUE
   GIT_PROGRESS   ON
