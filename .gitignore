@@ -30,8 +30,7 @@
 build/*
 
 # 3rd Parties sync'ed via make
-source/3rdParty/ImGui/*
-Source/3rdParty/SDL3/*
+source/3rdParty/*
 
 # Mac OS Garbo
 .DS_Store
