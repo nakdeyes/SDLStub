@@ -18,7 +18,13 @@ imgui_tables.cpp
 imgui_widgets.cpp
 imgui.cpp
 imgui.h
+backends/imgui_impl_opengl3.cpp
+backends/imgui_impl_opengl3.h
+backends/imgui_impl_sdl3.cpp
+backends/imgui_impl_sdl3.h
 )
 
-# target_include_directories(${PROJECT_NAME}.out PRIVATE Adder)
-target_include_directories(imgui PRIVATE /home/jorge/code-new/include/imgui)
+target_include_directories(imgui PRIVATE ../imgui)
+
+target_link_libraries(imgui PRIVATE SDL3::SDL3)
+target_include_directories(imgui PRIVATE ../SDL/include)

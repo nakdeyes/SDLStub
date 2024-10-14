@@ -26,8 +26,10 @@ endif()
 # Add your sources to the target
 target_sources(${EXECUTABLE_NAME} 
 PRIVATE 
-    Source/main.cpp
-    source/iosLaunchScreen.storyboard
+    source/app/main.cpp
+    source/app/SDLApp.cpp
+    source/app/SDLApp.h
+    source/app/platform/ios/iosLaunchScreen.storyboard
 )
 # What is iosLaunchScreen.storyboard? This file describes what Apple's mobile platforms
 # should show the user while the application is starting up. If you don't include one,
@@ -38,7 +40,7 @@ PRIVATE
 # To get an app icon on Apple platforms, add it to your executable.
 # Afterward, the image file in Info.plist.in.
 if(APPLE)
-    target_sources("${EXECUTABLE_NAME}" PRIVATE "source/logo.png")
+    target_sources("${EXECUTABLE_NAME}" PRIVATE "content/platform/logo.png")
 endif()
 
 # Set C++ version
@@ -50,6 +52,9 @@ if(CMAKE_SYSTEM_NAME MATCHES Emscripten)
 	set(CMAKE_EXECUTABLE_SUFFIX ".html" CACHE INTERNAL "")
 endif()
 
+set(SDL_OPENGL ON)
+set(SDL_VIDEO ON)
+
 # Configure SDL by calling its CMake file.
 # we use EXCLUDE_FROM_ALL so that its install targets and configs don't
 # pollute upwards into our configuration.
@@ -57,6 +62,7 @@ add_subdirectory(source/3rdParty/SDL EXCLUDE_FROM_ALL)
 
 # Link SDL to our executable. This also makes its include directory available to us. 
 target_link_libraries(${EXECUTABLE_NAME} PUBLIC SDL3::SDL3)
+target_include_directories(${EXECUTABLE_NAME} PUBLIC source/3rdParty/SDL)
 target_compile_definitions(${EXECUTABLE_NAME} PUBLIC SDL_MAIN_USE_CALLBACKS)
 
 # configure ImGui
@@ -64,6 +70,7 @@ add_subdirectory(source/3rdParty/ImGui EXCLUDE_FROM_ALL)
 
 # link ImGui 
 target_link_libraries(${EXECUTABLE_NAME} PUBLIC imgui)
+target_include_directories(${EXECUTABLE_NAME} PUBLIC source/3rdParty/ImGui)
 
 # set some extra configs for each platform
 set_target_properties(${EXECUTABLE_NAME} PROPERTIES 
@@ -71,7 +78,7 @@ set_target_properties(${EXECUTABLE_NAME} PROPERTIES
     MACOSX_BUNDLE TRUE
     # Set the Info.plist file for Apple Mobile platforms. Without this file, your app
     # will not launch. 
-    MACOSX_BUNDLE_INFO_PLIST "${CMAKE_CURRENT_SOURCE_DIR}/source/Info.plist.in"
+    MACOSX_BUNDLE_INFO_PLIST "${CMAKE_CURRENT_SOURCE_DIR}/source/app/platform/macos/Info.plist.in"
 
     # in Xcode, create a Scheme in the schemes dropdown for the app.
     XCODE_GENERATE_SCHEME TRUE
