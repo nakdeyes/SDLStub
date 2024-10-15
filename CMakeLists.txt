@@ -43,7 +43,7 @@ endif()
 # Add your sources to the target
 target_sources(${EXECUTABLE_NAME} 
 PRIVATE 
-    source/app/main.cpp
+    source/main.cpp
     source/app/SDLApp.cpp
     source/app/SDLApp.h
     source/app/platform/ios/iosLaunchScreen.storyboard
