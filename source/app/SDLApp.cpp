@@ -92,7 +92,7 @@ namespace SDLAppImGui
         // Start the Dear ImGui frame
         ImGui::NewFrame();
         
-        ImGui::DockSpaceOverViewport();
+        ImGui::DockSpaceOverViewport(ImGui::GetID("RootDockspace"), nullptr, ImGuiDockNodeFlags_PassthruCentralNode);
         
         if (Options.MainMenuBar)
         {
