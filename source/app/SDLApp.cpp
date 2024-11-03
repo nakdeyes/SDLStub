@@ -82,6 +82,10 @@
     SDL_GL_SetSwapInterval(1); // Enable vsync
     SDL_ShowWindow(SDLApp::Window);
     
+    SDL_Renderer* Renderer = nullptr;
+    SDL_Surface* Surface = SDL_CreateSurface(640, 480, SDL_PIXELFORMAT_RGBA8888);
+    SDL_Texture* Texture = SDL_CreateTextureFromSurface(Renderer, Surface);
+    
     // Setup Dear ImGui context
     IMGUI_CHECKVERSION();
     ImGui::CreateContext();
@@ -120,7 +124,12 @@
     printf("AppName: '%s'", AppNameStr.c_str());
 }
 
-int SDLApp::ExecuteApp()
+/*static*/ int SDLApp::ExecuteApp()
+{
+    return ExecuteApp([](float DeltaTime) {});
+}
+
+/*static*/ int SDLApp::ExecuteApp(std::function<void(float)> UpdateFunction)
 {
     if (!HasInited)
     {
@@ -158,6 +167,9 @@ int SDLApp::ExecuteApp()
             SDL_Delay(10);
             continue;
         }
+        
+        // Run Update function
+        UpdateFunction(1000.0f / io.Framerate);
         
         // Start the Dear ImGui frame
         ImGui_ImplOpenGL3_NewFrame();
@@ -230,4 +242,3 @@ int SDLApp::ExecuteApp()
     
     return 0;
 }
-

@@ -1,6 +1,6 @@
 // Copyright Tim Rawcliffe / Rawcliffe Enterprises
 
-#include "SDLApp.h"
+#include "app/SDLApp.h"
 
 int main(int, char**)
 {
