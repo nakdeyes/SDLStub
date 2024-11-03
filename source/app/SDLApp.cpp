@@ -16,14 +16,163 @@
 #include "backends/imgui_impl_opengl3.h"
 #include "backends/imgui_impl_sdl3.h"
 
+//______________________________________________________________________________________________________________________
+
 // App Properties
 /*static*/ std::string  SDLApp::AppNameStr  = std::string();
 /*static*/ bool         SDLApp::HasInited   = false;
 /*static*/ bool         SDLApp::AppRunning  = false;
+/*static*/ SDLApp::SDLAppOptions SDLApp::Options = SDLApp::SDLAppOptions();
 
 // SDL Stuff
 /*static*/ SDL_Window*      SDLApp::Window = nullptr;
 /*static*/ SDL_GLContext    SDLApp::GLContext = SDL_GLContext();
+
+//______________________________________________________________________________________________________________________
+
+namespace SDLAppImGui
+{
+    SDLAppImGuiOptions Options = SDLAppImGuiOptions();
+    
+    bool IsDrawingImGui = true;
+
+    void InitImGui(const char* GLSLVersion, SDL_Window* Window, SDL_GLContext GLContext)
+    {
+        // Setup Dear ImGui context
+        IMGUI_CHECKVERSION();
+        ImGui::CreateContext();
+        ImPlot::CreateContext();
+        ImGuiIO& io = ImGui::GetIO(); (void)io;
+        io.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard;     // Enable Keyboard Controls
+        io.ConfigFlags |= ImGuiConfigFlags_NavEnableGamepad;      // Enable Gamepad Controls
+        io.ConfigFlags |= ImGuiConfigFlags_DockingEnable;
+        io.ConfigFlags |= ImGuiConfigFlags_ViewportsEnable;
+        
+        io.ConfigDockingWithShift = true;
+        
+        // Setup Dear ImGui style
+        ImGui::StyleColorsDark();
+        //ImGui::StyleColorsLight();
+        
+        // Setup Platform/Renderer backends
+        ImGui_ImplSDL3_InitForOpenGL(Window, GLContext);
+        ImGui_ImplOpenGL3_Init(GLSLVersion);
+        
+        // Load Fonts
+        // - If no fonts are loaded, dear imgui will use the default font. You can also load multiple fonts and use ImGui::PushFont()/PopFont() to select them.
+        // - AddFontFromFileTTF() will return the ImFont* so you can store it if you need to select the font among multiple.
+        // - If the file cannot be loaded, the function will return a nullptr. Please handle those errors in your application (e.g. use an assertion, or display an error and quit).
+        // - The fonts will be rasterized at a given size (w/ oversampling) and stored into a texture when calling ImFontAtlas::Build()/GetTexDataAsXXXX(), which ImGui_ImplXXXX_NewFrame below will call.
+        // - Use '#define IMGUI_ENABLE_FREETYPE' in your imconfig file to use Freetype for higher quality font rendering.
+        // - Read 'docs/FONTS.md' for more instructions and details.
+        // - Remember that in C/C++ if you want to include a backslash \ in a string literal you need to write a double backslash \\ !
+        // - Our Emscripten build process allows embedding fonts to be accessible at runtime from the "fonts/" folder. See Makefile.emscripten for details.
+        //io.Fonts->AddFontDefault();
+        //io.Fonts->AddFontFromFileTTF("c:\\Windows\\Fonts\\segoeui.ttf", 18.0f);
+        //io.Fonts->AddFontFromFileTTF("../../misc/fonts/DroidSans.ttf", 16.0f);
+        //io.Fonts->AddFontFromFileTTF("../../misc/fonts/Roboto-Medium.ttf", 16.0f);
+        //io.Fonts->AddFontFromFileTTF("../../misc/fonts/Cousine-Regular.ttf", 15.0f);
+        //ImFont* font = io.Fonts->AddFontFromFileTTF("c:\\Windows\\Fonts\\ArialUni.ttf", 18.0f, nullptr, io.Fonts->GetGlyphRangesJapanese());
+        //IM_ASSERT(font != nullptr);
+    }
+
+    void UninitImGui()
+    {
+        // Cleanup
+        ImGui_ImplOpenGL3_Shutdown();
+        ImGui_ImplSDL3_Shutdown();
+        ImPlot::DestroyContext();
+        ImGui::DestroyContext();
+    }
+
+    bool DrawUpdate(ImGuiIO& io, std::string& AppNameStr, SDLApp::SDLAppOptions& AppOptions)
+    {
+        bool ContinueRunningApp = true;
+        
+        // Start the Dear ImGui frame
+        ImGui::NewFrame();
+        
+        ImGui::DockSpaceOverViewport();
+        
+        if (Options.MainMenuBar)
+        {
+            ImGui::BeginMainMenuBar();
+            
+            if (ImGui::BeginMenu("App"))
+            {
+                if (ImGui::BeginMenu("Options"))
+                {
+                    ImGui::ColorEdit4("Screen Clear Color", &AppOptions.ScreenClearColor[0]);
+                    
+                    ImGui::EndMenu();
+                }
+                
+                if (ImGui::MenuItem("Exit"))
+                {
+                    ContinueRunningApp = false;
+                }
+                
+                ImGui::EndMenu();
+            }
+            
+            if (ImGui::BeginMenu("ImGui"))
+            {
+                if (ImGui::BeginMenu("Display Options"))
+                {
+                    ImGui::Checkbox("Display App Name", &Options.MainMenu_AppName);
+                    ImGui::Checkbox("Display App FPS", &Options.MainMenu_FPS);
+                    
+                    ImGui::EndMenu();
+                }
+                
+                if (ImGui::BeginMenu("Demos"))
+                {
+                    ImGui::Checkbox("ImGui Demo", &Options.ShowDemoWindow_ImGui);
+                    ImGui::Checkbox("ImPlot Demo", &Options.ShowDemoWindow_ImPlot);
+                    
+                    ImGui::EndMenu();
+                }
+                
+                ImGui::EndMenu();
+            }
+            
+            if (Options.MainMenu_AppName)
+            {
+                const ImVec2 AppNameSize = ImGui::CalcTextSize(AppNameStr.c_str());
+                
+                ImGui::SetCursorPos(ImVec2((ImGui::GetWindowWidth() - AppNameSize.x) / 2.0f, ImGui::GetWindowPos().y));
+                
+                ImGui::Text("%s", AppNameStr.c_str());
+            }
+            
+            if (Options.MainMenu_FPS)
+            {
+                ImGui::SetCursorPos(ImVec2(ImGui::GetWindowWidth() - 80, ImGui::GetWindowPos().y));
+                
+                ImGui::Text("FPS: % .01f", io.Framerate);
+            }
+            
+            ImGui::EndMainMenuBar();
+        }
+        
+        if (Options.ShowDemoWindow_ImGui)
+        {
+            ImGui::ShowDemoWindow(&Options.ShowDemoWindow_ImGui);
+        }
+
+        if (Options.ShowDemoWindow_ImPlot)
+        {
+            ImPlot::ShowDemoWindow(&Options.ShowDemoWindow_ImPlot);
+        }
+        
+        // Rendering
+        ImGui::Render();
+        
+        return ContinueRunningApp;
+    }
+}
+
+//______________________________________________________________________________________________________________________
 
 /*static*/ void SDLApp::Init(const char* AppName)
 {
@@ -87,42 +236,14 @@
     SDL_Texture* Texture = SDL_CreateTextureFromSurface(Renderer, Surface);
     
     // Setup Dear ImGui context
-    IMGUI_CHECKVERSION();
-    ImGui::CreateContext();
-    ImPlot::CreateContext();
-    ImGuiIO& io = ImGui::GetIO(); (void)io;
-    io.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard;     // Enable Keyboard Controls
-    io.ConfigFlags |= ImGuiConfigFlags_NavEnableGamepad;      // Enable Gamepad Controls
-    
-    // Setup Dear ImGui style
-    ImGui::StyleColorsDark();
-    //ImGui::StyleColorsLight();
-    
-    // Setup Platform/Renderer backends
-    ImGui_ImplSDL3_InitForOpenGL(SDLApp::Window, SDLApp::GLContext);
-    ImGui_ImplOpenGL3_Init(glsl_version);
-    
-    // Load Fonts
-    // - If no fonts are loaded, dear imgui will use the default font. You can also load multiple fonts and use ImGui::PushFont()/PopFont() to select them.
-    // - AddFontFromFileTTF() will return the ImFont* so you can store it if you need to select the font among multiple.
-    // - If the file cannot be loaded, the function will return a nullptr. Please handle those errors in your application (e.g. use an assertion, or display an error and quit).
-    // - The fonts will be rasterized at a given size (w/ oversampling) and stored into a texture when calling ImFontAtlas::Build()/GetTexDataAsXXXX(), which ImGui_ImplXXXX_NewFrame below will call.
-    // - Use '#define IMGUI_ENABLE_FREETYPE' in your imconfig file to use Freetype for higher quality font rendering.
-    // - Read 'docs/FONTS.md' for more instructions and details.
-    // - Remember that in C/C++ if you want to include a backslash \ in a string literal you need to write a double backslash \\ !
-    // - Our Emscripten build process allows embedding fonts to be accessible at runtime from the "fonts/" folder. See Makefile.emscripten for details.
-    //io.Fonts->AddFontDefault();
-    //io.Fonts->AddFontFromFileTTF("c:\\Windows\\Fonts\\segoeui.ttf", 18.0f);
-    //io.Fonts->AddFontFromFileTTF("../../misc/fonts/DroidSans.ttf", 16.0f);
-    //io.Fonts->AddFontFromFileTTF("../../misc/fonts/Roboto-Medium.ttf", 16.0f);
-    //io.Fonts->AddFontFromFileTTF("../../misc/fonts/Cousine-Regular.ttf", 15.0f);
-    //ImFont* font = io.Fonts->AddFontFromFileTTF("c:\\Windows\\Fonts\\ArialUni.ttf", 18.0f, nullptr, io.Fonts->GetGlyphRangesJapanese());
-    //IM_ASSERT(font != nullptr);
+    SDLAppImGui::InitImGui(glsl_version, SDLApp::Window, SDLApp::GLContext);
     
     HasInited = true;
     
     printf("AppName: '%s'", AppNameStr.c_str());
 }
+
+//______________________________________________________________________________________________________________________
 
 /*static*/ int SDLApp::ExecuteApp()
 {
@@ -137,11 +258,6 @@
         return -1;
     }
     
-    // Our state
-    bool show_demo_window = true;
-    bool show_plot_demo_window = true;
-    bool show_another_window = false;
-    ImVec4 clear_color = ImVec4(0.45f, 0.55f, 0.60f, 1.00f);
     ImGuiIO& io = ImGui::GetIO(); (void)io;
     
     AppRunning = true;
@@ -157,10 +273,22 @@
         while (SDL_PollEvent(&event))
         {
             ImGui_ImplSDL3_ProcessEvent(&event);
-            if (event.type == SDL_EVENT_QUIT)
+            if ((event.type == SDL_EVENT_QUIT) ||
+                (event.type == SDL_EVENT_WINDOW_CLOSE_REQUESTED && event.window.windowID == SDL_GetWindowID(SDLApp::Window)))
+            {
                 AppRunning = false;
-            if (event.type == SDL_EVENT_WINDOW_CLOSE_REQUESTED && event.window.windowID == SDL_GetWindowID(SDLApp::Window))
-                AppRunning = false;
+            }
+            else if (event.type == SDL_EVENT_KEY_DOWN)
+            {
+                if (event.key.scancode == SDLAppImGui::Options.ToggleVisibilityKey)
+                {
+                    SDLAppImGui::IsDrawingImGui = !SDLAppImGui::IsDrawingImGui;
+                }
+                else if (event.key.scancode == Options.ExitAppKey)
+                {
+                    AppRunning = false;
+                }
+            }
         }
         if (SDL_GetWindowFlags(SDLApp::Window) & SDL_WINDOW_MINIMIZED)
         {
@@ -168,73 +296,43 @@
             continue;
         }
         
-        // Run Update function
-        UpdateFunction(1000.0f / io.Framerate);
+        const float DeltaTime = (1000.0f / io.Framerate);
         
-        // Start the Dear ImGui frame
+        
         ImGui_ImplOpenGL3_NewFrame();
         ImGui_ImplSDL3_NewFrame();
-        ImGui::NewFrame();
         
-        // 1. Show the big demo window (Most of the sample code is in ImGui::ShowDemoWindow()! You can browse its code to learn more about Dear ImGui!).
-        if (show_demo_window)
-        {
-            ImGui::ShowDemoWindow(&show_demo_window);
-        }
-
-        if (show_plot_demo_window)
-        {
-            ImPlot::ShowDemoWindow(&show_plot_demo_window);
-        }
+        // Run Update function
+        UpdateFunction(DeltaTime);
         
-        // 2. Show a simple window that we create ourselves. We use a Begin/End pair to create a named window.
+        if (SDLAppImGui::IsDrawingImGui)
         {
-            static float f = 0.0f;
-            static int counter = 0;
-            
-            ImGui::Begin("Hello, world!");                          // Create a window called "Hello, world!" and append into it.
-            
-            ImGui::Text("This is some useful text.");               // Display some text (you can use a format strings too)
-            ImGui::Checkbox("Demo Window", &show_demo_window);      // Edit bools storing our window open/close state
-            ImGui::Checkbox("Plot Demo Window", &show_plot_demo_window);      // Edit bools storing our window open/close state
-            ImGui::Checkbox("Another Window", &show_another_window);
-            
-            ImGui::SliderFloat("float", &f, 0.0f, 1.0f);            // Edit 1 float using a slider from 0.0f to 1.0f
-            ImGui::ColorEdit3("clear color", (float*)&clear_color); // Edit 3 floats representing a color
-            
-            if (ImGui::Button("Button"))                            // Buttons return true when clicked (most widgets return true when edited/activated)
-                counter++;
-            ImGui::SameLine();
-            ImGui::Text("counter = %d", counter);
-            
-            ImGui::Text("Application average %.3f ms/frame (%.1f FPS)", 1000.0f / io.Framerate, io.Framerate);
-            ImGui::End();
+            AppRunning &= SDLAppImGui::DrawUpdate(io, AppNameStr, Options);
         }
-        // 3. Show another simple window.
-        if (show_another_window)
-        {
-            ImGui::Begin("Another Window", &show_another_window);   // Pass a pointer to our bool variable (the window will have a closing button that will clear the bool when clicked)
-            ImGui::Text("Hello from another window!");
-            if (ImGui::Button("Close Me"))
-                show_another_window = false;
-            ImGui::End();
-        }
-        
-        // Rendering
-        ImGui::Render();
         
         glViewport(0, 0, (int)io.DisplaySize.x, (int)io.DisplaySize.y);
-        glClearColor(clear_color.x * clear_color.w, clear_color.y * clear_color.w, clear_color.z * clear_color.w, clear_color.w);
+        glClearColor(Options.ScreenClearColor[0] * Options.ScreenClearColor[3], Options.ScreenClearColor[1] * Options.ScreenClearColor[3], Options.ScreenClearColor[2] * Options.ScreenClearColor[3], Options.ScreenClearColor[3]);
         glClear(GL_COLOR_BUFFER_BIT);
-        ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
+        if (SDLAppImGui::IsDrawingImGui)
+        {
+            ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
+            
+            if (io.ConfigFlags & ImGuiConfigFlags_ViewportsEnable)
+            {
+                ImGui::UpdatePlatformWindows();
+                ImGui::RenderPlatformWindowsDefault();
+                SDL_GL_MakeCurrent(SDLApp::Window , SDLApp::GLContext);
+            }
+        }
+        else
+        {
+            SDL_GL_MakeCurrent(SDLApp::Window , SDLApp::GLContext);
+        }
+        
         SDL_GL_SwapWindow(SDLApp::Window);
     }
     
-    // Cleanup
-    ImGui_ImplOpenGL3_Shutdown();
-    ImGui_ImplSDL3_Shutdown();
-    ImPlot::DestroyContext();
-    ImGui::DestroyContext();
+    SDLAppImGui::UninitImGui();
     
     SDL_GL_DestroyContext(SDLApp::GLContext);
     SDL_DestroyWindow(SDLApp::Window);
@@ -242,3 +340,5 @@
     
     return 0;
 }
+
+//______________________________________________________________________________________________________________________

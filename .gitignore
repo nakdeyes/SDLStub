@@ -39,6 +39,9 @@ source/3rdParty/*
 # Gradle
 .gradle/*
 
+# Rider local files
+.idea/*
+
 # Executables
 *.exe
 *.out
