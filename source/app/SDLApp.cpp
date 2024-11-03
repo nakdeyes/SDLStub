@@ -140,14 +140,14 @@ namespace SDLAppImGui
             {
                 const ImVec2 AppNameSize = ImGui::CalcTextSize(AppNameStr.c_str());
                 
-                ImGui::SetCursorPos(ImVec2((ImGui::GetWindowWidth() - AppNameSize.x) / 2.0f, ImGui::GetWindowPos().y));
+                ImGui::SetCursorPos(ImVec2((ImGui::GetWindowWidth() - AppNameSize.x) / 2.0f, ImGui::GetCursorPosY()));
                 
                 ImGui::Text("%s", AppNameStr.c_str());
             }
             
             if (Options.MainMenu_FPS)
             {
-                ImGui::SetCursorPos(ImVec2(ImGui::GetWindowWidth() - 80, ImGui::GetWindowPos().y));
+                ImGui::SetCursorPos(ImVec2(ImGui::GetWindowWidth() - 80, ImGui::GetCursorPosY()));
                 
                 ImGui::Text("FPS: % .01f", io.Framerate);
             }
